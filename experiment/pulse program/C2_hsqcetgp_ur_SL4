@@ -1,0 +1,163 @@
+;hsqcetgp
+;avance-version (20/03/03)
+;HSQC
+;2D H-1/X correlation via double inept transfer
+;phase sensitive
+;with decoupling during acquisition
+;
+;G. Bodenhausen & D.J. Ruben, Chem. Phys. Lett. 69, 185 (1980)
+;
+;$CLASS=HighRes
+;$DIM=2D
+;$TYPE=
+;$SUBTYPE=
+;$COMMENT=
+
+
+#include <Avance.incl>
+#include <Delay.incl>
+#include <Grad.incl>
+#include <De.incl>
+
+define list<gradient> gScale = {1 -1}
+
+
+"spoffs11=0"
+"spoffs12=0"
+"spoffs21=0"
+"spoffs22=0"
+
+"d0=3u"
+"d4=1s/(cnst2*4)"
+"d11=30m"
+"d13=4u"
+"d16=100u"
+
+"p13=500u"
+"p14=500u"
+"p15=500u"
+"p17=500u"
+"p23=500u"
+"p24=500u"
+"p25=500u"
+"p27=500u"
+
+"in0=inf1/2"
+"l3 = td1/2"
+
+"DELTA=d0*2+p14+p16+d16*2"
+"DELTA1=d4-d13-p16-d16-4u*2"
+
+
+
+1 ze1
+	ze2
+  d11 pl13:f3 pl14:f4 ; set decoupling power for 13C channels
+2 30m do:f3 do:f4			; decoupling power is switched off
+3 1m
+4 d1 
+  (ralign (p13:sp13 ph1):f1 (p23:sp23 ph1):f2 )
+  d4
+  (lalign (p14:sp14 ph1):f1 (p24:sp24 ph1):f2 (p17:sp17 ph6):f3 (p27:sp27 ph6):f4)
+	d4 UNBLKGRAD
+ 	(lalign (p13:sp13 ph2):f1 (p23:sp23 ph2):f2 (p15:sp15 ph3):f3 (p25:sp25 ph3):f4)
+  d0
+	(center (p14:sp14 ph5):f1 (p24:sp24 ph5):f2)
+	d0
+  (lalign (p16:gp4*gScale) (p16:sp12 ph1):f3) ;1st gradient on det2, lock det1
+  d16
+	(lalign (p16:gp1*gScale) (p16:sp22 ph1):f4) ;1st gradient on det1, lock det2 
+	d16
+	(center (p17:sp17 ph4):f3 (p27:sp27 ph4):f4)
+
+  DELTA
+
+  (lalign (p13:sp13 ph1):f1 (p23:sp23 ph1):f2 (p15:sp15 ph4):f3 (p25:sp25 ph4):f4)
+  d4
+	(center (p14:sp14 ph1):f1 (p24:sp24 ph1):f2 (p17:sp17 ph1):f3 (p27:sp27 ph1):f4)
+	d13
+	(lalign (p16:gp5) (p16:sp11 ph1):f1) ;2nd gradient on det2, lock det1 
+	d16
+	(lalign (p16:gp2) (p16:sp21 ph1):f2) ;2nd gradient on det1, lock det2
+	DELTA1 pl13:f3 pl14:f4; set decoupling power for 13C channels
+	4u BLKGRAD
+	4u cpd3:f3 cpd4:f4
+
+  ACQ_START1(ph30,ph31) ACQ_START2(ph30,ph31)
+  0.1u DWELL_GEN1 DWELL_GEN2 
+	(aq1) (aq2)
+
+	eosc1
+	eosc2
+
+	lo to 2 times ns
+
+	30m do:f3 do:f4 
+
+  10m wr1 #0 if1 #0 zd1
+  10m wr2 #1 if2 #1 zd2
+
+	1m  igrad gScale 
+	lo to 3 times 2
+  1m  ip3*2 
+	1m  ip6*2 
+	1m  ip31*2 
+	1m  id0
+  lo to 4 times l3
+
+exit 
+
+ph1=0
+ph2=1
+ph3=0 2
+ph4=0 0 0 0 2 2 2 2
+ph5=0 0 2 2
+ph6=0
+ph30=0
+ph31=0 2 0 2 2 0 2 0
+
+
+;pl13: f3 channel - power level for CPD/BB decoupling
+;pl14: f3 channel - power level for CPD/BB decoupling
+;sp13: d1-1H -  90 degree shaped pulse
+;sp23: d2-1H -  90 degree shaped pulse
+;sp14: d1-1H - 180 degree shaped pulse
+;sp24: d2-1H - 180 degree shaped pulse
+;sp15: d1-13C -  90 degree shaped pulse
+;sp25: d2-13C -  90 degree shaped pulse
+;sp17: d1-13C - 180 degree shaped pulse
+;sp27: d2-13C - 180 degree shaped pulse
+;sp11: f1 channel- spin locking pulse 
+;sp21: f2 channel- spin locking pulse
+;sp12: f3 channel- spin locking pulse
+;sp22: f4 channel- spin locking pulse
+;p28: f1 channel -  trim pulse                         [1 msec]
+;p16: homospoil/gradient pulse
+;d0 : incremented delay (2D)                         [3 usec]
+;d1 : relaxation delay; 1-5 * T1
+;d4 : 1/(4J)XH
+;d11: delay for disk I/O                             [30 msec]
+;d13: short delay                                    [4 usec]
+;d16: delay for homospoil/gradient recovery
+;cnst2: = J(XH)
+;inf1: 1/SW(X) = 2 * DW(X)
+;in0: 1/(2 * SW(X)) = DW(X)
+;nd0: 2
+;ns: 1 * n
+;ds: >= 16
+;td1: number of experiments
+;FnMODE: echo-antiecho
+;cpd2: decoupling according to sequence defined by cpdprg2
+;pcpd2: f2 channel - 90 degree pulse for decoupling sequence
+
+;det 1: use y gradient
+;det 2: use z gradient 
+
+;use gradient ratio:	gp 7 : gp 8
+;40 : 20.1    for C-13
+
+;preprocessor-flags-start
+;TRIMP: to use trimpulse p28@pl1 start experiment with
+;option -DTRIMP (eda: ZGOPTNS)
+;preprocessor-flags-end
+;$Id:$
