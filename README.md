@@ -7,6 +7,4 @@ leading to spin dephasing and signal loss. This study introduces a compensation 
 locking. The proposed approach offers an effective solution for NMR probes with parallel, independently switchable gradient coils.
 
 ## Paper
-The paper was published in [Magnetic Resonance](https://doi.org/10.5194/mr-6-173-2025).
-
-Mengjia He, Neil MacKinnon, Dominique Buyens, Burkhard Luy, and Jan G. Korvink. Coherence locking in a parallel nuclear magnetic resonance probe defends against gradient field spillover. Magnetic Resonance, 6(2):173–181, July 2025.
+He, M., MacKinnon, N., Buyens, D., Luy, B., and Korvink, J. G.: Coherence locking in a parallel nuclear magnetic resonance probe defends against gradient field spillover, Magn. Reson., 6, 173–181, https://doi.org/10.5194/mr-6-173-2025, 2025.
